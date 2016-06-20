@@ -119,7 +119,7 @@ void CSModuleWriter::GenerateNativeSource()
 
     WriteIncludes(source);
 
-    source += "\n#include <AtomicNET/NETCore/NETCore.h>\n";
+    source += "\n#include <AtomicNET/AtomicNETNative/NETCore.h>\n";
 
     String ns = module_->GetPackage()->GetNamespace();
 
