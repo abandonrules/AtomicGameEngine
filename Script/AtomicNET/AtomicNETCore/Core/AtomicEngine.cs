@@ -55,6 +55,17 @@ namespace AtomicEngine
     {
         public const string LIBNAME = "/Users/josh/Dev/atomic/build-AtomicGameEngine-Desktop-Debug/Source/AtomicNET/AtomicNETNative/libAtomicNETNative.dylib";
     }
+    public partial class NETApplication
+    {
+
+        public static int RunMain()
+        {
+            return csb_Atomic_NETApplication_Main();
+        }
+
+        [DllImport (Constants.LIBNAME, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+         private static extern int csb_Atomic_NETApplication_Main();
+    }
 
 
 }

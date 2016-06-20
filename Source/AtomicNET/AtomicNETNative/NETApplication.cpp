@@ -78,7 +78,7 @@ void NETApplication::Setup()
     engineParameters_.InsertNew("FullScreen", false);
     engineParameters_.InsertNew("WindowWidth", 1280);
     engineParameters_.InsertNew("WindowHeight", 720);
-    engineParameters_.InsertNew("ResourcePaths", "AtomicResources");
+    //engineParameters_.InsertNew("ResourcePaths", "AtomicResources");
 #endif
 
 #if ATOMIC_PLATFORM_WINDOWS || ATOMIC_PLATFORM_LINUX
@@ -107,6 +107,9 @@ void NETApplication::Setup()
             }
         }
     }
+
+    // FIXME AtomicNET:
+    engineParameters_["ResourcePrefixPath"] = "/Users/josh/Dev/atomic/AtomicGameEngine/Resources/";
 
     // Use the script file name as the base name for the log file
     engineParameters_.InsertNew("LogName", filesystem->GetAppPreferencesDir("AtomicPlayer", "Logs") + "AtomicPlayer.log");
@@ -146,6 +149,23 @@ void NETApplication::HandleLogMessage(StringHash eventType, VariantMap& eventDat
             fprintf(stdout, "%s\n", rows[i].CString());
         }
     }
+
+}
+
+extern "C"
+{
+#ifdef ATOMIC_PLATFORM_WINDOWS
+#define ATOMIC_EXPORT_API __declspec(dllexport)
+#else
+#define ATOMIC_EXPORT_API
+#endif
+
+ATOMIC_EXPORT_API int csb_Atomic_NETApplication_Main()
+{
+    Atomic::SharedPtr<Atomic::Context> context(new Atomic::Context());
+    Atomic::SharedPtr<NETApplication> application(new NETApplication(context));
+    return application->Run();
+}
 
 }
 
