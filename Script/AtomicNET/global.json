@@ -1,0 +1,3 @@
+{
+    "projects" : ["AtomicNETCore", "AtomicNET", "AtomicNETService", "AtomicTest"]
+}

@@ -223,7 +223,17 @@ void CSFunctionWriter::WriteNativeFunction(String& source)
     String callSig;
     GenNativeCallParameters(callSig);
     if (!function_->isConstructor_)
-        line = ToString("%sself->%s(%s);\n", returnStatement.CString(), function_->GetName().CString(), callSig.CString());
+    {
+        if (function_->IsStatic())
+        {
+            line = ToString("%s%s::%s(%s);\n", returnStatement.CString(), klass->GetNativeName().CString(), function_->GetName().CString(), callSig.CString());
+        }
+        else
+        {
+            line = ToString("%sself->%s(%s);\n", returnStatement.CString(), function_->GetName().CString(), callSig.CString());
+        }
+
+    }
     else
     {
         if (klass->IsAbstract())
@@ -318,7 +328,7 @@ void CSFunctionWriter::WriteManagedPInvokeFunctionSignature(String& source)
 
     Vector<String> args;
 
-    if (!function_->IsConstructor())
+    if (!function_->IsConstructor() && !function_->IsStatic())
     {
         args.Push("IntPtr self");
     }
@@ -461,8 +471,10 @@ void CSFunctionWriter::WriteManagedConstructor(String& source)
 
     WriteDefaultStructParameters(source);
 
-    line = ToString("if (typeof(%s) == this.GetType()", klass->GetName().CString());
-    line += ToString(" || (this.GetType().BaseType == typeof(%s) && !NativeCore.GetNativeType(this.GetType())))\n", klass->GetName().CString());
+    line = ToString("if (typeof(%s) == this.GetType())", klass->GetName().CString());
+
+    // TODO: BaseType missing from CoreCLR
+    //line += ToString(" || (this.GetType().BaseType == typeof(%s) && !NativeCore.GetNativeType(this.GetType())))\n", klass->GetName().CString());
 
     source += IndentLine(line);
 
@@ -569,6 +581,11 @@ void CSFunctionWriter::WriteManagedFunction(String& source)
 
     String line = "public ";
 
+    if (function_->IsStatic())
+    {
+        line += "static ";
+    }
+
     bool marked = false;
     JSBClass* baseClass = klass->GetBaseClass();
     if (baseClass)
@@ -620,12 +637,21 @@ void CSFunctionWriter::WriteManagedFunction(String& source)
     String callSig;
     GenPInvokeCallParameters(callSig);
 
-    line += ToString("csb_%s_%s_%s(nativeInstance",
-                     package->GetName().CString(), klass->GetName().CString(), function_->GetName().CString());
+    String nativeInstance;
+
+    if (!function_->IsStatic())
+        nativeInstance = "nativeInstance";
+
+    line += ToString("csb_%s_%s_%s(%s",
+                     package->GetName().CString(), klass->GetName().CString(), function_->GetName().CString(), nativeInstance.CString());
 
     if (callSig.Length())
     {
-        line += ", " + callSig;
+        if (nativeInstance.Length())
+            line += ", " + callSig;
+        else
+            line += callSig;
+
     }
 
     if (function_->GetReturnType())
@@ -655,10 +681,10 @@ void CSFunctionWriter::WriteManagedFunction(String& source)
             }
 
             source += IndentLine(line);
+
+            source+= "\n";
         }
     }
-
-    source+= "\n";
 
     Dedent();
 
@@ -673,14 +699,17 @@ void CSFunctionWriter::GenerateManagedSource(String& sourceOut)
 
     Indent();
     Indent();
-    Indent();
 
     if (function_->GetDocString().Length())
     {
         // monodocer -assembly:NETCore.dll -path:en -pretty
         // mdoc export-html -o htmldocs en
         source += IndentLine("/// <summary>\n");
-        source += IndentLine("/// " + function_->GetDocString() + "\n");
+        if (function_->GetDocString().Contains('\n'))
+            source += IndentLine("/* " + function_->GetDocString() + "*/\n");
+        else
+            source += IndentLine("/// " + function_->GetDocString() + "\n");
+
         source += IndentLine("/// </summary>\n");
     }
 
@@ -701,7 +730,12 @@ void CSFunctionWriter::GenerateManagedSource(String& sourceOut)
             {
                 JSBClass* klass = function_->GetClass();
                 String managedType = CSTypeHelper::GetManagedTypeString(function_->GetReturnType());
-                String marshal = "private " + managedType + " ";
+                String marshal = "private ";
+
+                if (function_->IsStatic())
+                    marshal += "static ";
+
+                marshal += managedType + " ";
 
                 marshal += ToString("%s%sReturnValue = new %s();\n", klass->GetName().CString(), function_->GetName().CString(), managedType.CString());
 
@@ -711,7 +745,6 @@ void CSFunctionWriter::GenerateManagedSource(String& sourceOut)
 
     }
 
-    Dedent();
     Dedent();
     Dedent();
 
@@ -759,6 +792,9 @@ String CSFunctionWriter::MapDefaultParameter(JSBFunctionType* parameter)
         return init;
 
     if (init == "0")
+        return init;
+
+    if (init == "3")
         return init;
 
     if (init == "-1")

@@ -1,0 +1,9 @@
+
+{
+  "name" : "AtomicNET",
+  "namespace" : "Atomic",
+  "dependencies" : ["Script/Packages/Atomic"],
+  "modules" : ["AtomicNET"],
+  "platforms" : ["WINDOWS", "MACOSX","LINUX"],
+  "bindings" : ["C#"]
+}

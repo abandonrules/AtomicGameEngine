@@ -1,0 +1,5 @@
+{
+	"name" : "AtomicNET",
+	"sources" : ["Source/AtomicNET/AtomicNETNative"],
+	"classes" : ["NETCore", "NETApplication"]
+}
