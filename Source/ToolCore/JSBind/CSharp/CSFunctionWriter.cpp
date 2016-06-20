@@ -708,7 +708,11 @@ void CSFunctionWriter::GenerateManagedSource(String& sourceOut)
         // monodocer -assembly:NETCore.dll -path:en -pretty
         // mdoc export-html -o htmldocs en
         source += IndentLine("/// <summary>\n");
-        source += IndentLine("/// " + function_->GetDocString() + "\n");
+        if (function_->GetDocString().Contains('\n'))
+            source += IndentLine("/* " + function_->GetDocString() + "*/\n");
+        else
+            source += IndentLine("/// " + function_->GetDocString() + "\n");
+
         source += IndentLine("/// </summary>\n");
     }
 
@@ -792,6 +796,9 @@ String CSFunctionWriter::MapDefaultParameter(JSBFunctionType* parameter)
         return init;
 
     if (init == "0")
+        return init;
+
+    if (init == "3")
         return init;
 
     if (init == "-1")
