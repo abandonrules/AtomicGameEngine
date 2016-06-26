@@ -681,10 +681,10 @@ void CSFunctionWriter::WriteManagedFunction(String& source)
             }
 
             source += IndentLine(line);
+
+            source+= "\n";
         }
     }
-
-    source+= "\n";
 
     Dedent();
 
@@ -697,7 +697,6 @@ void CSFunctionWriter::GenerateManagedSource(String& sourceOut)
 
     String source = "";
 
-    Indent();
     Indent();
     Indent();
 
@@ -746,7 +745,6 @@ void CSFunctionWriter::GenerateManagedSource(String& sourceOut)
 
     }
 
-    Dedent();
     Dedent();
     Dedent();
 
