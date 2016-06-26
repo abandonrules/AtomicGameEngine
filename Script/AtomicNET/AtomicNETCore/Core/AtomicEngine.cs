@@ -4,32 +4,58 @@ using System.Runtime.InteropServices;
 
 namespace AtomicEngine
 {
+    public class NativeType 
+    {
+
+		public Type Type => type;
+
+        public NativeType(IntPtr nativeClassID, Type type, Func<IntPtr, RefCounted> managedConstructor)
+        {
+            this.nativeClassID = nativeClassID;
+            this.type = type;
+            this.managedConstructor = managedConstructor;
+
+            NativeCore.RegisterNativeType(this);
+        }
+
+        internal Type type;
+        internal IntPtr nativeClassID;
+        internal Func<IntPtr, RefCounted> managedConstructor;
+
+    }
 
     static class NativeCore
     {
+        
+        // register a newly created native
+        public static IntPtr RegisterNative (IntPtr native, RefCounted r)
+        {
+            return native;
+        }
+
+        public static void RegisterNativeType(NativeType nativeType)
+        {
+            if (nativeClassIDToNativeType.ContainsKey(nativeType.nativeClassID) || typeToNativeType.ContainsKey(nativeType.type))
+            {
+                throw new System.InvalidOperationException("NativeCore.RegisterNativeType - Duplicate NativeType Registered");
+            }
+
+            nativeClassIDToNativeType[nativeType.nativeClassID] = nativeType;
+            typeToNativeType[nativeType.type] = nativeType;
+
+        } 
+
         // wraps an existing native instance, with downcast support
-        public static T WrapNative<T>(IntPtr native) where T : RefCounted
+        public static T WrapNative<T> (IntPtr native) where T:RefCounted
         {
             return null;
         }
 
-        public static void RegisterNativeType(Type type)
-        {
+        // Native ClassID to NativeType lookup
+        internal static Dictionary<IntPtr,NativeType> nativeClassIDToNativeType = new Dictionary<IntPtr, NativeType>();
 
-        }
-
-        public static bool GetNativeType(Type type)
-        {
-            return true;
-        }
-
-
-        public static IntPtr RegisterNative(IntPtr native, RefCounted r)
-        {
-            return IntPtr.Zero;
-        }
-
-        public static Dictionary<IntPtr, Func<IntPtr, RefCounted>> nativeClassIDToManagedConstructor = new Dictionary<IntPtr, Func<IntPtr, RefCounted>>();
+        // Managed Type to NativeType lookup
+        internal static Dictionary<Type,NativeType> typeToNativeType = new Dictionary<Type, NativeType>();
     }
 
     public partial class RefCounted

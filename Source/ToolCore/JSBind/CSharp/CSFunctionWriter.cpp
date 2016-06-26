@@ -471,11 +471,9 @@ void CSFunctionWriter::WriteManagedConstructor(String& source)
 
     WriteDefaultStructParameters(source);
 
-    line = ToString("if (typeof(%s) == this.GetType()", klass->GetName().CString());
-
+    line = ToString("if (typeof(%s) == this.GetType())", klass->GetName().CString());
 
     // TODO: BaseType missing from CoreCLR
-    line += ToString(" && !NativeCore.GetNativeType(this.GetType()))\n");
     //line += ToString(" || (this.GetType().BaseType == typeof(%s) && !NativeCore.GetNativeType(this.GetType())))\n", klass->GetName().CString());
 
     source += IndentLine(line);
