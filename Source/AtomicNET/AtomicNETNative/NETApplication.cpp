@@ -152,22 +152,4 @@ void NETApplication::HandleLogMessage(StringHash eventType, VariantMap& eventDat
 
 }
 
-extern "C"
-{
-#ifdef ATOMIC_PLATFORM_WINDOWS
-#define ATOMIC_EXPORT_API __declspec(dllexport)
-#else
-#define ATOMIC_EXPORT_API
-#endif
-
-ATOMIC_EXPORT_API int csb_Atomic_NETApplication_Main()
-{
-    Atomic::SharedPtr<Atomic::Context> context(new Atomic::Context());
-    Atomic::SharedPtr<NETApplication> application(new NETApplication(context));
-    return application->Run();
-}
-
-}
-
-
 }

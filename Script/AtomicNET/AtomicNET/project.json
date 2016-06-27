@@ -1,16 +1,13 @@
 {
   "version": "1.0.0-*",
   "buildOptions": {
-    "emitEntryPoint": true, 
+    "emitEntryPoint": false, 
     "allowUnsafe": true
   },
   "dependencies": {
     "AtomicNETCore": {
       "target": "project"
-    },
-    "AtomicNET": {
-      "target": "project"
-    },        
+    },      
     "Microsoft.NETCore.App": {
       "type": "platform",
       "version": "1.0.0-rc2-3002702"

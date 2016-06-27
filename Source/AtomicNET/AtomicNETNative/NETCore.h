@@ -35,19 +35,22 @@ class ATOMIC_API NETCore : public Object
 
 public:
 
-    /// Construct.
-    NETCore(Context* context);
     /// Destruct.
     virtual ~NETCore();
 
+    static NETCore* Initialize();
+    static void Shutdown();
+
     /// We access this directly in binding code, where there isn't a context
     /// to get a reference from
-    static inline Context* GetContext() { return instance_->csContext_; }
+    static inline Context* GetContext() { return csContext_; }
 
 private:
 
-    static WeakPtr<Context> csContext_;
-    static WeakPtr<NETCore> instance_;
+    /// Construct.
+    NETCore(Context* context);
+
+    static SharedPtr<Context> csContext_;
 
 };
 

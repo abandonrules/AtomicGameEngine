@@ -1,17 +1,20 @@
-﻿using System;
-using System.Threading;
+﻿using AtomicEngine;
 
 namespace ConsoleApplication
 {
     public class Program
     {
         public static void Main(string[] args)
-        {
-            // Thread.Sleep(30 * 1000);
-            var debugBuild = AtomicEngine.Engine.GetDebugBuild();
-            Console.WriteLine("Debug Build: {0}", debugBuild);
+        {               
+            // Initialize AtomicNET
+            AtomicNET.Initialize();
 
-            AtomicEngine.NETApplication.RunMain();
+            // Create the Application
+            var app = new NETApplication();
+
+            // Run!
+            app.Run();
         }
     }
 }
+

@@ -1,4 +1,0 @@
-
-Debugging Unmanaged Code, example invocation
-
-/usr/local/share/dotnet/dotnet exec --additionalprobingpath /Users/josh/.nuget/packages /Users/josh/Dev/atomic/AtomicGameEngine/Script/AtomicNET/AtomicNETCore/bin/Debug/netcoreapp1.0/AtomicNETCore.dll

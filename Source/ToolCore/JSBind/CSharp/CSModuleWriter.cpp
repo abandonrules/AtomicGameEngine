@@ -379,8 +379,8 @@ void CSModuleWriter::GenerateManagedModuleClass(String& sourceOut)
 
         const char* className = klass->GetName().CString();
 
-        line = ToString("NativeCore.RegisterNativeType(new NativeType(%s.csb_%s_%s_GetClassIDStatic (), ", className, package->GetName().CString(), className);
-        line += ToString("typeof(%s), (IntPtr x) => { return new %s (x); } ) );\n",className, className);
+        line = ToString("new NativeType(%s.csb_%s_%s_GetClassIDStatic (), ", className, package->GetName().CString(), className);
+        line += ToString("typeof(%s), (IntPtr x) => { return new %s (x); } );\n",className, className);
 
         source += IndentLine(line);
 
