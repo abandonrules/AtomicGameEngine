@@ -10,7 +10,9 @@ public static class AtomicNET
 
     public static T GetSubsystem<T>() where T :AObject
     {
-        return (T) subSystems [typeof(T)];
+        AObject subSystem = null;
+        subSystems.TryGetValue(typeof(T), out subSystem);
+        return (T) subSystem;
     }
 
     public static void RegisterSubsystem (String name)

@@ -144,8 +144,23 @@ namespace AtomicEngine
     
     public static partial class Constants
     {
-        public const string LIBNAME = "/Users/josh/Dev/atomic/build-AtomicGameEngine-Desktop-Debug/Source/AtomicNET/AtomicNETNative/libAtomicNETNative.dylib";
+        public const string LIBNAME = "/Users/josh/Dev/atomic/build-AtomicGameEngine-Desktop-Debug/Source/AtomicNET/libAtomicNETNative.dylib";
     }
+    
+
+    public class CSComponent : AObject
+    {
+
+    }
+
+	public class InspectorAttribute : Attribute
+	{
+		public InspectorAttribute(string DefaultValue = "")
+		{
+		}
+
+		public string DefaultValue;
+	}    
 
 /*
     public partial class NETApplication

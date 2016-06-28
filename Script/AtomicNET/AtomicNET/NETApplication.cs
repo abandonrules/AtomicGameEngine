@@ -8,16 +8,17 @@ namespace AtomicEngine
     public partial class NETApplication : Application
     {
 
-        public static NETApplication Create()
+        public static NETApplication Create(bool headless = false)
         {
             // Initialize AtomicNET
             AtomicNET.Initialize();
 
-            var app = CreateInternal();
+            var app = CreateInternal(headless);
 
             app.Initialize();
 
-            AtomicNET.RegisterSubsystem ("Graphics");
+            if (!headless)
+                AtomicNET.RegisterSubsystem ("Graphics");
 
             return app;
         }

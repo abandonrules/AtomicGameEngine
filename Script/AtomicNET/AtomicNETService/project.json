@@ -11,7 +11,8 @@
     "AtomicNET": {
       "target": "project"
     },        
-    "Microsoft.NETCore.App": {      
+    "Microsoft.NETCore.App": {
+      "type": "platform",        
       "version": "1.0.0-rc2-3002702"
     }
   },

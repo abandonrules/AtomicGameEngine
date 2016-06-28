@@ -1,6 +1,5 @@
 //
-// Copyright (c) 2008-2014 the Urho3D project.
-// Copyright (c) 2014-2015, THUNDERBEAST GAMES LLC All rights reserved
+// Copyright (c) 2014-2016 THUNDERBEAST GAMES LLC
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,40 +22,40 @@
 
 #pragma once
 
-#include <Atomic/Engine/Application.h>
+#include <Atomic/Core/Object.h>
 
 namespace Atomic
 {
+    class IPCBroker;
+}
 
-class NETApplication : public Application
+using namespace Atomic;
+
+namespace ToolCore
 {
-    OBJECT(NETApplication);
+
+/// NETService subsystem
+class AtomicNETService : public Object
+{
+    OBJECT(AtomicNETService);
 
 public:
+    /// Construct.
+    AtomicNETService(Context* context);
+    /// Destruct.
+    virtual ~AtomicNETService();
 
-    static NETApplication* CreateInternal(bool headless = false);
-
-    int Initialize();
-
-    bool RunFrame();
-
-    void Shutdown();
+    bool Start();
+    bool GetBrokerEnabled() const;
 
 private:
 
-    /// Construct.
-    NETApplication(Context* context, bool headless = false);
+    void HandleIPCWorkerStarted(StringHash eventType, VariantMap& eventData);
+    void HandleIPCWorkerLog(StringHash eventType, VariantMap& eventData);
+    void HandleIPCWorkerExit(StringHash eventType, VariantMap& eventData);
 
-    /// Setup before engine initialization. Verify that a script file has been specified.
-    virtual void Setup();
-    /// Setup after engine initialization. Load the script and execute its start function.
-    virtual void Start();
-    /// Cleanup after the main loop. Run the script's stop function if it exists.
-    virtual void Stop();
-
-    void HandleLogMessage(StringHash eventType, VariantMap& eventData);
-
-    bool headless_;
+    SharedPtr<IPCBroker> serviceBroker_;
+    bool brokerEnabled_;
 
 };
 

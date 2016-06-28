@@ -35,11 +35,14 @@
 #include <AtomicPlayer/Player.h>
 #include <Atomic/DebugNew.h>
 
+#include <Atomic/IPC/IPC.h>
+
 // Move me
 #include <Atomic/Environment/Environment.h>
 
 #include "NETCore.h"
 #include "NETApplication.h"
+#include "NETService.h"
 
 #ifdef __APPLE__
 #include <unistd.h>
@@ -48,13 +51,23 @@
 namespace Atomic
 {
 
-NETApplication::NETApplication(Context* context) :
-    Application(context)
+NETApplication::NETApplication(Context* context, bool headless) :
+    Application(context),
+    headless_(headless)
 {
 }
 
 void NETApplication::Setup()
 {
+
+    if (headless_)
+    {
+        engineParameters_["Headless"] = true;
+
+        // Register IPC system
+        context_->RegisterSubsystem(new IPC(context_));
+        context_->RegisterSubsystem(new NETService(context_));
+    }
 
 #ifdef ATOMIC_3D
     RegisterEnvironmentLibrary(context_);
@@ -120,8 +133,10 @@ void NETApplication::Start()
 {
     Application::Start();
 
-    // Instantiate and register the Player subsystem
-    context_->RegisterSubsystem(new AtomicPlayer::Player(context_));
+    // Instantiate and register the Player subsystem.
+
+    if (!engineParameters_["Headless"].GetBool())
+        context_->RegisterSubsystem(new AtomicPlayer::Player(context_));
 
     return;
 }
@@ -166,9 +181,9 @@ void NETApplication::Stop()
     Application::Stop();
 }
 
-NETApplication* NETApplication::CreateInternal()
+NETApplication* NETApplication::CreateInternal(bool headless)
 {
-    return new NETApplication(NETCore::GetContext());
+    return new NETApplication(NETCore::GetContext(), headless);
 }
 
 void NETApplication::HandleLogMessage(StringHash eventType, VariantMap& eventData)

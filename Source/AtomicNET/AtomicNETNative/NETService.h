@@ -1,6 +1,5 @@
 //
-// Copyright (c) 2008-2014 the Urho3D project.
-// Copyright (c) 2014-2015, THUNDERBEAST GAMES LLC All rights reserved
+// Copyright (c) 2014-2016 THUNDERBEAST GAMES LLC
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,41 +22,39 @@
 
 #pragma once
 
-#include <Atomic/Engine/Application.h>
+#include <Atomic/Core/Object.h>
+#include <Atomic/IPC/IPC.h>
+#include <Atomic/IPC/IPCTypes.h>
+
+using namespace Atomic;
 
 namespace Atomic
 {
 
-class NETApplication : public Application
+/// NETService subsystem
+class NETService : public Object
 {
-    OBJECT(NETApplication);
+    friend class NETApplication;
+
+    OBJECT(NETService);
 
 public:
-
-    static NETApplication* CreateInternal(bool headless = false);
-
-    int Initialize();
-
-    bool RunFrame();
-
-    void Shutdown();
+    /// Construct.
+    NETService(Context* context);
+    /// Destruct.
+    virtual ~NETService();
 
 private:
 
-    /// Construct.
-    NETApplication(Context* context, bool headless = false);
-
-    /// Setup before engine initialization. Verify that a script file has been specified.
-    virtual void Setup();
-    /// Setup after engine initialization. Load the script and execute its start function.
-    virtual void Start();
-    /// Cleanup after the main loop. Run the script's stop function if it exists.
-    virtual void Stop();
+    void ProcessArguments();
 
     void HandleLogMessage(StringHash eventType, VariantMap& eventData);
+    void HandleIPCInitialize(StringHash eventType, VariantMap& eventData);
+    void HandleExitRequest(StringHash eventType, VariantMap& eventData);
 
-    bool headless_;
-
+    IPCHandle fd_[2];
+    WeakPtr<IPC> ipc_;
+    bool brokerActive_;
 };
 
 }
