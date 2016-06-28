@@ -38,6 +38,7 @@
 // Move me
 #include <Atomic/Environment/Environment.h>
 
+#include "NETCore.h"
 #include "NETApplication.h"
 
 #ifdef __APPLE__
@@ -125,9 +126,49 @@ void NETApplication::Start()
     return;
 }
 
+int NETApplication::Initialize()
+{
+    Setup();
+    if (exitCode_)
+        return exitCode_;
+
+    if (!engine_->Initialize(engineParameters_))
+    {
+        ErrorExit();
+        return exitCode_;
+    }
+
+    Start();
+    if (exitCode_)
+        return exitCode_;
+
+    return 0;
+}
+
+bool NETApplication::RunFrame()
+{
+    if (engine_->IsExiting())
+        return false;
+
+    engine_->RunFrame();
+
+    return true;
+}
+
+void NETApplication::Shutdown()
+{
+    Stop();
+
+}
+
 void NETApplication::Stop()
 {
     Application::Stop();
+}
+
+NETApplication* NETApplication::CreateInternal()
+{
+    return new NETApplication(NETCore::GetContext());
 }
 
 void NETApplication::HandleLogMessage(StringHash eventType, VariantMap& eventData)

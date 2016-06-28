@@ -33,6 +33,17 @@ class NETApplication : public Application
     OBJECT(NETApplication);
 
 public:
+
+    static NETApplication* CreateInternal();
+
+    int Initialize();
+
+    bool RunFrame();
+
+    void Shutdown();
+
+private:
+
     /// Construct.
     NETApplication(Context* context);
 
@@ -43,7 +54,6 @@ public:
     /// Cleanup after the main loop. Run the script's stop function if it exists.
     virtual void Stop();
 
-private:
 
     void HandleLogMessage(StringHash eventType, VariantMap& eventData);
 

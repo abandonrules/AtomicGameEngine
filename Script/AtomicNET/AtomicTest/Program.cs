@@ -1,20 +1,26 @@
-﻿using AtomicEngine;
+﻿using System;
+using AtomicEngine;
 
-namespace ConsoleApplication
+public class Program
 {
-    public class Program
-    {
-        public static void Main(string[] args)
-        {               
-            // Initialize AtomicNET
-            AtomicNET.Initialize();
+    public static void Main(string[] args)
+    {               
 
-            // Create the Application
-            var app = new NETApplication();
+        // Create the Application
+        var app = NETApplication.Create();
 
-            // Run!
-            app.Run();
+        // Example of getting a subsystem
+        var graphics = AtomicNET.GetSubsystem<Graphics>();
+
+        // Managed code in charge of main loop
+        while (app.RunFrame())
+        {
+
         }
+
+        // Shut 'er down
+        app.Shutdown();
     }
 }
+
 
