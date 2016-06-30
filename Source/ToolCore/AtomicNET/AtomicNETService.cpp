@@ -90,7 +90,7 @@ bool AtomicNETService::Start()
     String dump;
     dump.Join(vargs, " ");
 
-    LOGINFOF("Launching Broker %s %s", serviceBinary.CString(), dump.CString());
+    LOGDEBUGF("Launching Broker %s %s", serviceBinary.CString(), dump.CString());
 
     IPC* ipc = GetSubsystem<IPC>();
     serviceBroker_ = ipc->SpawnWorker(serviceBinary, vargs);

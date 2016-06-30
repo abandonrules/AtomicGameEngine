@@ -58,72 +58,19 @@ void NETService::HandleIPCInitialize(StringHash eventType, VariantMap& eventData
     brokerActive_ = true;
 }
 
-void NETService::ProcessArguments() {
+bool NETService::Initialize()
+{
 
     const Vector<String>& arguments = GetArguments();
 
     int id = -1;
+    if (!IPC::ProcessArguments(arguments, id, fd_[0], fd_[1]))
+        return false;
 
-    for (unsigned i = 0; i < arguments.Size(); ++i)
-    {
-        if (arguments[i].Length() > 1)
-        {
-            String argument = arguments[i].ToLower();
-            // String value = i + 1 < arguments.Size() ? arguments[i + 1] : String::EMPTY;
+    SubscribeToEvent(E_IPCINITIALIZE, HANDLER(NETService, HandleIPCInitialize));
+    ipc_->InitWorker((unsigned) id, fd_[0], fd_[1]);
 
-            if (argument.StartsWith("--ipc-id="))
-            {
-                Vector<String> idc = argument.Split(argument.CString(), '=');
-                if (idc.Size() == 2)
-
-                    id = ToInt(idc[1].CString());
-            }
-
-            else if (argument.StartsWith("--ipc-server=") || argument.StartsWith("--ipc-client="))
-            {
-                LOGINFOF("Starting IPCWorker %s", argument.CString());
-
-                Vector<String> ipc = argument.Split(argument.CString(), '=');
-
-                if (ipc.Size() == 2)
-                {
-                    if (argument.StartsWith("--ipc-server="))
-                    {
-#ifdef ATOMIC_PLATFORM_WINDOWS
-                        // clientRead
-                        WString wipc(ipc[1]);
-                        HANDLE pipe = reinterpret_cast<HANDLE>(_wtoi64(wipc.CString()));
-                        fd_[0] = pipe;
-#else
-                        int fd = ToInt(ipc[1].CString());
-                        fd_[0] = fd;
-#endif
-                    }
-                    else
-                    {
-#ifdef ATOMIC_PLATFORM_WINDOWS
-                        // clientWrite
-                        WString wipc(ipc[1]);
-                        HANDLE pipe = reinterpret_cast<HANDLE>(_wtoi64(wipc.CString()));
-                        fd_[1] = pipe;
-#else
-                        int fd = ToInt(ipc[1].CString());
-                        fd_[1] = fd;
-#endif
-                    }
-
-                }
-
-            }
-
-        }
-    }
-
-    if (id > 0 && fd_[0] != INVALID_IPCHANDLE_VALUE && fd_[1] != INVALID_IPCHANDLE_VALUE)
-    {
-        SubscribeToEvent(E_IPCINITIALIZE, HANDLER(NETService, HandleIPCInitialize));
-        ipc_->InitWorker((unsigned) id, fd_[0], fd_[1]);
-    }
+    return true;
 }
 
 

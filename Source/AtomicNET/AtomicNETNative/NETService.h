@@ -44,9 +44,9 @@ public:
     /// Destruct.
     virtual ~NETService();
 
-private:
+    bool Initialize();
 
-    void ProcessArguments();
+private:
 
     void HandleLogMessage(StringHash eventType, VariantMap& eventData);
     void HandleIPCInitialize(StringHash eventType, VariantMap& eventData);

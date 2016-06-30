@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2014-2015, THUNDERBEAST GAMES LLC All rights reserved
+// Copyright (c) 2014-2016, THUNDERBEAST GAMES LLC All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,49 +22,30 @@
 
 #pragma once
 
-#include <Atomic/Core/Context.h>
 #include <Atomic/Core/Object.h>
+#include <Atomic/Core/Context.h>
 
 namespace Atomic
 {
 
-class NETVariantMap;
-
-typedef void (*NETCoreEventDispatchFunction)(unsigned eventID, NETVariantMap* eventData);
-
-struct NETCoreDelegates
+class ATOMIC_API NETEventDispatcher : public Object, public GlobalEventListener
 {
-    NETCoreEventDispatchFunction eventDispatch;
-};
-
-class ATOMIC_API NETCore : public Object
-{
-
-    OBJECT(NETCore);
+    OBJECT(NETEventDispatcher);
 
 public:
-
     /// Construct.
-    NETCore(Context* context, NETCoreDelegates* delegates);
-
+    NETEventDispatcher(Context* context);
     /// Destruct.
-    virtual ~NETCore();
+    virtual ~NETEventDispatcher();
 
-    static void Shutdown();
-
-    static void RegisterNETEventType(unsigned eventType);
-
-    inline static void DispatchEvent(unsigned eventID, NETVariantMap* eventData = nullptr) { eventDispatch_(eventID, eventData); }
-
-    /// We access this directly in binding code, where there isn't a context
-    /// to get a reference from
-    static inline Context* GetContext() { return csContext_; }
+    inline void RegisterNETEvent(StringHash hash) { netEvents_[hash] = true; }
 
 private:
 
-    static SharedPtr<Context> csContext_;
+    void BeginSendEvent(Context* context, Object* sender, StringHash eventType, VariantMap& eventData);
+    void EndSendEvent(Context* context, Object* sender, StringHash eventType, VariantMap& eventData);
 
-    static NETCoreEventDispatchFunction eventDispatch_;
+    HashMap<StringHash, bool> netEvents_;
 
 };
 

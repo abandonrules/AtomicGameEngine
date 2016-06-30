@@ -55,20 +55,23 @@ public class Program
 {
     public static void Main(string[] args)
     {               
-        Console.WriteLine(AtomicTools.AtomicTools.InspectAssembly("/Users/josh/Dev/atomic/AtomicGameEngine/Script/AtomicNET/AtomicNETService/bin/Debug/netcoreapp1.0/AtomicNETService.dll"));
+        // Console.WriteLine(AtomicTools.AtomicTools.InspectAssembly("/Users/josh/Dev/atomic/AtomicGameEngine/Script/AtomicNET/AtomicNETService/bin/Debug/netcoreapp1.0/AtomicNETService.dll"));
         
-
         // Create the Application
-        //var app = NETApplication.Create(true);
+        var app = NETApplication.Create(false);
+
+		//SubscribeToEvent(E_UPDATE, HANDLER(Material, HandleAttributeAnimationUpdate));
+		
+		app.SubscribeToEvent("Update", (eventType, eventData) => { Console.WriteLine("Update"); }); 
 
         // Managed code in charge of main loop
-        //while (app.RunFrame())
-        //{
+        while (app.RunFrame())
+        {
 
-        //}
+        }
 
         // Shut 'er down
-        //app.Shutdown();
+        app.Shutdown();
     }
 }
 

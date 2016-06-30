@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2014-2015, THUNDERBEAST GAMES LLC All rights reserved
+// Copyright (c) 2014-2016 THUNDERBEAST GAMES LLC
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,49 +22,36 @@
 
 #pragma once
 
-#include <Atomic/Core/Context.h>
-#include <Atomic/Core/Object.h>
+#include "Command.h"
 
-namespace Atomic
+using namespace Atomic;
+
+namespace ToolCore
 {
 
-class NETVariantMap;
+class AtomicNETService;
 
-typedef void (*NETCoreEventDispatchFunction)(unsigned eventID, NETVariantMap* eventData);
-
-struct NETCoreDelegates
+class NETCmd: public Command
 {
-    NETCoreEventDispatchFunction eventDispatch;
-};
-
-class ATOMIC_API NETCore : public Object
-{
-
-    OBJECT(NETCore);
+    OBJECT(NETCmd);
 
 public:
 
-    /// Construct.
-    NETCore(Context* context, NETCoreDelegates* delegates);
+    NETCmd(Context* context);
+    virtual ~NETCmd();
 
-    /// Destruct.
-    virtual ~NETCore();
+    bool Parse(const Vector<String>& arguments, unsigned startIndex, String& errorMsg);
 
-    static void Shutdown();
+    void Run();
 
-    static void RegisterNETEventType(unsigned eventType);
-
-    inline static void DispatchEvent(unsigned eventID, NETVariantMap* eventData = nullptr) { eventDispatch_(eventID, eventData); }
-
-    /// We access this directly in binding code, where there isn't a context
-    /// to get a reference from
-    static inline Context* GetContext() { return csContext_; }
+    bool RequiresProjectLoad() { return false; }
 
 private:
 
-    static SharedPtr<Context> csContext_;
+    String command_;
+    String assemblyPath_;
 
-    static NETCoreEventDispatchFunction eventDispatch_;
+    WeakPtr<AtomicNETService> netService_;
 
 };
 
