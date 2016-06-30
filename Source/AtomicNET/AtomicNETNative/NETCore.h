@@ -28,8 +28,6 @@
 namespace Atomic
 {
 
-class NETVariantMap;
-
 typedef void (*NETCoreEventDispatchFunction)(unsigned eventID, VariantMap* eventData);
 
 struct NETCoreDelegates
