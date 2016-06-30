@@ -141,7 +141,7 @@ public:
     }
 
 
-    void CopySourceVariantMap(const VariantMap src) { vmap_ = src; }
+    void CopySourceVariantMap(const VariantMap& src) { vmap_ = src; }
 
 private:
 

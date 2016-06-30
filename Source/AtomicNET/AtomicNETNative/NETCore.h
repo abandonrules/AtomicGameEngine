@@ -30,7 +30,7 @@ namespace Atomic
 
 class NETVariantMap;
 
-typedef void (*NETCoreEventDispatchFunction)(unsigned eventID, NETVariantMap* eventData);
+typedef void (*NETCoreEventDispatchFunction)(unsigned eventID, VariantMap* eventData);
 
 struct NETCoreDelegates
 {
@@ -54,7 +54,7 @@ public:
 
     static void RegisterNETEventType(unsigned eventType);
 
-    inline static void DispatchEvent(unsigned eventID, NETVariantMap* eventData = nullptr) { eventDispatch_(eventID, eventData); }
+    inline static void DispatchEvent(unsigned eventID, VariantMap* eventData = nullptr) { eventDispatch_(eventID, eventData); }
 
     /// We access this directly in binding code, where there isn't a context
     /// to get a reference from

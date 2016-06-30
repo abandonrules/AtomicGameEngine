@@ -62,7 +62,7 @@ public class Program
 
 		//SubscribeToEvent(E_UPDATE, HANDLER(Material, HandleAttributeAnimationUpdate));
 		
-		app.SubscribeToEvent("Update", (eventType, eventData) => { Console.WriteLine("Update"); }); 
+		app.SubscribeToEvent("Update", (eventType, eventData) => { Console.WriteLine("Update: {0}", eventData.GetFloat("TimeStep")); }); 
 
         // Managed code in charge of main loop
         while (app.RunFrame())

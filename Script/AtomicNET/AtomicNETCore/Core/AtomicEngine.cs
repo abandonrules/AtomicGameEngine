@@ -65,6 +65,18 @@ namespace AtomicEngine
             eventReceivers.Add(w);        
         }
 
+        static ScriptVariantMap[] svm;
+        static int svmDepth = 0;
+        const int svmMax = 256;
+
+        internal static void Initialize()
+        {
+            // preallocate script variant maps
+            svm = new ScriptVariantMap[svmMax];
+            for (int i = 0; i < svmMax; i++)
+                svm[i] = new ScriptVariantMap();
+        }
+
         public static void EventDispatch(uint eventType, IntPtr eventData)
         {
             List<WeakReference> eventReceivers;
@@ -86,12 +98,20 @@ namespace AtomicEngine
 
                 if (scriptMap == null)
                 {
-                    scriptMap = new ScriptVariantMap();
+                    if (svmDepth == svmMax)
+                    {
+                        throw new System.InvalidOperationException("NativeCore.EventDispatch - exceeded max svm");
+                    }
+
+                    scriptMap = svm[svmDepth++];
+                    scriptMap.CopyVariantMap(eventData);
                 }
 
-                ((AObject)w.Target).HandleEvent(eventType, scriptMap);
-                    
+                ((AObject)w.Target).HandleEvent(eventType, scriptMap);                    
             }
+
+            if (scriptMap != null)
+                svmDepth--;
             
         }
 
@@ -264,6 +284,8 @@ namespace AtomicEngine
             }
 
             AtomicNET.context = context;
+
+            NativeCore.Initialize();
         }
 
         private static Context context;
@@ -313,6 +335,19 @@ namespace AtomicEngine
             SubscribeToEvent(AtomicNET.StringToStringHash(eventType), eventDelegate);           
         }
 
+    }
+
+    public partial class ScriptVariantMap
+    {
+
+        public void CopyVariantMap(IntPtr vm)
+        {
+            csb_Atomic_AtomicNET_ScriptVariantMapCopyVariantMap(nativeInstance, vm);
+        }
+
+        [DllImport (Constants.LIBNAME, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        private static extern IntPtr csb_Atomic_AtomicNET_ScriptVariantMapCopyVariantMap(IntPtr svm, IntPtr vm);
+        
     }
 
     public static partial class Constants

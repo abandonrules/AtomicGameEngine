@@ -21,7 +21,7 @@
 //
 
 #include "NETCore.h"
-#include "NETEventHelper.h"
+#include "NETEventDispatcher.h"
 
 namespace Atomic
 {
@@ -42,7 +42,7 @@ void NETEventDispatcher::BeginSendEvent(Context* context, Object* sender, String
     if (!netEvents_.Contains(eventType))
         return;
 
-    NETCore::DispatchEvent(eventType.Value(), nullptr);
+    NETCore::DispatchEvent(eventType.Value(), &eventData);
 
 }
 

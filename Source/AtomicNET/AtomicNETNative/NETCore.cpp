@@ -1,9 +1,10 @@
 
 #include <Atomic/Math/MathDefs.h>
 #include <Atomic/Core/ProcessUtils.h>
+#include <Atomic/Script/ScriptVariantMap.h>
 
 #include "NETCore.h"
-#include "NETEventHelper.h"
+#include "NETEventDispatcher.h"
 
 namespace Atomic
 {
@@ -87,8 +88,23 @@ unsigned csb_Atomic_AtomicNET_StringToStringHash(const char* str)
     }
 
     return hash;
+}
+
+void csb_Atomic_AtomicNET_ScriptVariantMapCopyVariantMap(ScriptVariantMap* svm, VariantMap* vm)
+{
+    if (!svm)
+        return;
+
+    if (!vm)
+    {
+        svm->CopySourceVariantMap(Variant::emptyVariantMap);
+        return;
+    }
+
+    svm->CopySourceVariantMap(*vm);
 
 }
+
 
 }
 
