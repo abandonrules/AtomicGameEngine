@@ -44,8 +44,12 @@
 #include "NETApplication.h"
 #include "NETService.h"
 
-#ifdef __APPLE__
+#ifdef ATOMIC_PLATFORM_OSX
 #include <unistd.h>
+#endif
+
+#ifdef ATOMIC_PLATFORM_WINDOWS
+#include <stdio.h>
 #endif
 
 namespace Atomic

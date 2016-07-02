@@ -49,8 +49,13 @@ public:
 private:
 
     String command_;
-    String assemblyPath_;
 
+    // genproject command
+    String projectFile_;
+    String scriptPlatform_;
+
+    // parse command
+    String assemblyPath_;
     WeakPtr<AtomicNETService> netService_;
 
 };

@@ -35,6 +35,7 @@
 
 #include "NETCmd.h"
 #include "../AtomicNET/AtomicNETService.h"
+#include "../AtomicNET/NETProjectGen.h"
 
 namespace ToolCore
 {
@@ -60,7 +61,26 @@ bool NETCmd::Parse(const Vector<String>& arguments, unsigned startIndex, String&
         return false;
     }
 
-    if (command_ == "parse")
+    if (command_ == "genproject")
+    {
+        projectFile_ = startIndex + 2 < arguments.Size() ? arguments[startIndex + 2] : String::EMPTY;
+        scriptPlatform_ = startIndex + 3 < arguments.Size() ? arguments[startIndex + 3] : String::EMPTY;
+
+        if (!projectFile_.Length())
+        {
+            errorMsg = "Unable to parse project file";
+            return false;
+        }
+
+
+        if (!scriptPlatform_.Length())
+        {
+            errorMsg = "Unable to parse script platform";
+            return false;
+        }
+            
+    }
+    else if (command_ == "parse")
     {
         assemblyPath_ = startIndex + 2 < arguments.Size() ? arguments[startIndex + 2] : String::EMPTY;
 
@@ -92,19 +112,33 @@ bool NETCmd::Parse(const Vector<String>& arguments, unsigned startIndex, String&
 
 void NETCmd::Run()
 {
-    // start the NETService, which means we also need IPC
-    IPC* ipc = new IPC(context_);
-    context_->RegisterSubsystem(ipc);
-
-    netService_ = new AtomicNETService(context_);
-    context_->RegisterSubsystem(netService_);
-
-    if (!netService_->Start())
+    if (command_ == "parse")
     {
-        Error("Unable to start AtomicNETService");
+        // start the NETService, which means we also need IPC
+        IPC* ipc = new IPC(context_);
+        context_->RegisterSubsystem(ipc);
+
+        netService_ = new AtomicNETService(context_);
+        context_->RegisterSubsystem(netService_);
+
+        if (!netService_->Start())
+        {
+            Error("Unable to start AtomicNETService");
+        }
+    }
+    else if (command_ == "genproject")
+    {
+        SharedPtr<NETProjectGen> gen(new NETProjectGen(context_));
+
+        gen->SetScriptPlatform(scriptPlatform_);
+        gen->LoadProject(projectFile_);
+
+        gen->Generate();
+
     }
 
     Finished();
+
 }
 
 }

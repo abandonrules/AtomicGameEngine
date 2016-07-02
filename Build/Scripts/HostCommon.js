@@ -34,6 +34,10 @@ function getScriptModules(platform) {
     if (pkg.platforms && pkg.platforms.indexOf(platform) == -1)
       continue;
 
+    // ATOMICNET: skip C# modules for now
+    if (pkg.bindings && pkg.bindings.indexOf("JavaScript") == -1)
+      continue;
+
     for (var j in pkg.modules) {
 
       var moduleName = pkg.modules[j];
