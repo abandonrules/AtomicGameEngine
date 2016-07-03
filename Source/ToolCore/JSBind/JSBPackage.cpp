@@ -287,11 +287,11 @@ bool JSBPackage::Load(const String& packageFolder)
         {
             String binding = bindings.GetArray()[i].GetString();
 
-            if (binding.ToUpper() == "C#")
+            if (binding.ToUpper() == "CSHARP")
             {
                 bindingTypes_.Push(CSHARP);
             }
-            else if (binding.ToUpper() == "JS")
+            else if (binding.ToUpper() == "JAVASCRIPT")
             {
                 bindingTypes_.Push(JAVASCRIPT);
             }

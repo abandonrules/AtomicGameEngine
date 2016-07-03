@@ -5,5 +5,5 @@
   "dependencies" : ["Script/Packages/Atomic"],
   "modules" : ["AtomicNET"],
   "platforms" : ["WINDOWS", "MACOSX","LINUX"],
-  "bindings" : ["C#"]
+  "bindings" : ["CSharp"]
 }

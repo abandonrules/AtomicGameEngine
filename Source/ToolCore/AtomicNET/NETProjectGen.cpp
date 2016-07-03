@@ -467,10 +467,10 @@ namespace ToolCore
                         depends[j]->GetProjectGUID().CString(), depends[j]->GetProjectGUID().CString());
                 }
 
-                source += "\EndProjectSection\n";
+                source += "\tEndProjectSection\n";
             }
 
-            source += "EndProject\n";
+            source += "\tEndProject\n";
         }
 
         source += "Global\n";
