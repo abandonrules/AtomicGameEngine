@@ -10,8 +10,8 @@ namespace AtomicEngine
 
         public static NETApplication Create(bool headless = false)
         {
-            // Initialize NETCore
-            NETCore.Initialize();
+            // Initialize AtomicNET
+            AtomicNET.Initialize();
 
             var app = CreateInternal(headless);
 

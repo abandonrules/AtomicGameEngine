@@ -3,7 +3,14 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace AtomicEngine
-{    
+{
+    [StructLayout(LayoutKind.Sequential)]
+    public struct CoreDelegates
+    {
+        [MarshalAs(UnmanagedType.FunctionPtr)]
+        public EventDispatchDelegate eventDispatch;
+    }
+
     public class NativeType 
     {
 
@@ -24,12 +31,8 @@ namespace AtomicEngine
 
     }
 
-    public delegate void RegisterNETEventTypeDelegate(uint eventType);
-
     public static class NativeCore
     {
-
-        static public RegisterNETEventTypeDelegate RegisterNETEventType;
 
         static internal void SubscribeToEvent(AObject receiver, uint eventType)
         {
@@ -273,20 +276,28 @@ namespace AtomicEngine
             NetworkModule.Initialize ();
             PhysicsModule.Initialize ();
             EnvironmentModule.Initialize ();
-            UIModule.Initialize ();        
-        }
+            UIModule.Initialize ();
 
-        public static void SetContext(Context context)
-        {
-            if (AtomicNET.context != null)
-            {
-                throw new System.InvalidOperationException("AtomicNET.SetContext - Attempting to reset context");
-            }
+            AtomicNETModule.Initialize();
 
-            AtomicNET.context = context;
+            CoreDelegates delegates = new CoreDelegates();
+            delegates.eventDispatch = NativeCore.EventDispatch;
+
+            IntPtr coreptr = csb_Atomic_NETCore_Initialize(ref delegates);
+
+            NETCore core = (coreptr == IntPtr.Zero ? null : NativeCore.WrapNative<NETCore>(coreptr));
+
+            if (core != null)
+                AtomicNET.RegisterSubsystem("NETCore", core);
+
+            context = core.Context;
 
             NativeCore.Initialize();
+
         }
+
+        [DllImport(Constants.LIBNAME, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        private static extern IntPtr csb_Atomic_NETCore_Initialize(ref CoreDelegates delegates);
 
         private static Context context;
         private static Dictionary<Type, AObject> subSystems = new Dictionary<Type, AObject>();
@@ -325,7 +336,7 @@ namespace AtomicEngine
 
         public void SubscribeToEvent(uint eventType, EventDelegate eventDelegate)
         {
-            NativeCore.RegisterNETEventType(eventType);
+            NETCore.RegisterNETEventType(eventType);
             eventHandlers[eventType] = eventDelegate;
             NativeCore.SubscribeToEvent(this, eventType);
         }
@@ -368,6 +379,8 @@ namespace AtomicEngine
         }
 
         public string DefaultValue;
-    }    
+    }
+
+
 
 }
