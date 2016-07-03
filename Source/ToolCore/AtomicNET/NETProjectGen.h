@@ -45,6 +45,8 @@ public:
 
     void ReplacePathStrings(String& path);
 
+    void CopyXMLElementRecursive(XMLElement source, XMLElement dest);
+
 protected:
 
     SharedPtr<XMLFile> xmlFile_;
@@ -66,12 +68,15 @@ public:
     const String& GetName() { return name_; }
     const String& GetProjectGUID() { return projectGuid_; }
 
+    const Vector<String>& GetReferences() const { return references_;  }
+
     bool Generate();
 
 private:
 
     void CreateCompileItemGroup(XMLElement &projectRoot);
     void CreateReferencesItemGroup(XMLElement &projectRoot);
+    void CreatePackagesItemGroup(XMLElement &projectRoot);
     void CreateMainPropertyGroup(XMLElement &projectRoot);
     void CreateDebugPropertyGroup(XMLElement &projectRoot);
     void CreateReleasePropertyGroup(XMLElement &projectRoot);
@@ -88,6 +93,7 @@ private:
     XMLElement xmlRoot_;
 
     Vector<String> references_;
+    Vector<String> packages_;
     Vector<String> sourceFolders_;
 };
 
