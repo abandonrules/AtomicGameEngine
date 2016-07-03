@@ -5,30 +5,18 @@
   },
   "projects" : [
     {
-      "name": "AtomicNETCore",
-      "outputType" : "Library",
-      "rootNamespace" : "AtomicEngine",
-      "assemblyName" : "AtomicNETCore",
-      "assemblyOutputPath" : "$ATOMIC_ROOT$/Artifacts/AtomicNET/",
-      "references" : [
-        "System", "System.Core" , "System.Xml.Linq", "System.XML"
-      ],
-      "sources" : [
-        "$ATOMIC_ROOT$/Script/AtomicNET/AtomicNETCore/",
-        "$ATOMIC_ROOT$/Artifacts/Build/Source/Generated/$SCRIPT_PLATFORM$/CSharp/Packages/Atomic/Managed/"
-      ]
-    },
-    {
       "name": "AtomicNET",
       "outputType" : "Library",
       "rootNamespace" : "AtomicEngine",
       "assemblyName" : "AtomicNET",
       "assemblyOutputPath" : "$ATOMIC_ROOT$/Artifacts/AtomicNET/",
       "references" : [
-        "System", "System.Core" , "System.Xml.Linq", "System.XML", "AtomicNETCore"
+        "System", "System.Core" , "System.Xml.Linq", "System.XML"
       ],
       "sources" : [
+        "$ATOMIC_ROOT$/Script/AtomicNET/AtomicNETCore/",
         "$ATOMIC_ROOT$/Script/AtomicNET/AtomicNET/",
+        "$ATOMIC_ROOT$/Artifacts/Build/Source/Generated/$SCRIPT_PLATFORM$/CSharp/Packages/Atomic/Managed/",
         "$ATOMIC_ROOT$/Artifacts/Build/Source/Generated/$SCRIPT_PLATFORM$/CSharp/Packages/AtomicNET/Managed/"
       ]
     },
@@ -45,7 +33,6 @@
         "<Reference Include=\"System.Reflection.Metadata, Version=1.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL\"><HintPath>packages\\System.Reflection.Metadata.1.3.0\\lib\\portable-net45+win8\\System.Reflection.Metadata.dll</HintPath><Private>True</Private></Reference>",
         "System.Xml.Linq",
         "System.XML",
-        "AtomicNETCore",
         "AtomicNET"
       ],
       "sources" : [

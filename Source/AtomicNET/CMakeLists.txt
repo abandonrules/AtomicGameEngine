@@ -26,3 +26,6 @@ if (APPLE)
 
 endif()
 
+add_custom_command( TARGET AtomicNETNative POST_BUILD
+                    COMMAND "${CMAKE_COMMAND}" ARGS -E make_directory \"${CMAKE_SOURCE_DIR}/Artifacts/AtomicNET\"
+                    COMMAND "${CMAKE_COMMAND}" ARGS -E copy_if_different \"$<TARGET_FILE:AtomicNETNative>\" \"${CMAKE_SOURCE_DIR}/Artifacts/AtomicNET/\" )
