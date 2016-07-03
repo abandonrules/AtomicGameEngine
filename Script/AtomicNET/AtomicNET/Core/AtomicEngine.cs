@@ -352,7 +352,7 @@ namespace AtomicEngine
 
     public static partial class Constants
     {
-        public const string LIBNAME = "/Users/josh/Dev/atomic/build-AtomicGameEngine-Desktop-Debug/Source/AtomicNET/libAtomicNETNative.dylib";
+        public const string LIBNAME = "AtomicNETNative.dll";
     }
 
 

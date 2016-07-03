@@ -218,6 +218,7 @@ namespace ToolCore
         pgroup.CreateChild("WarningLevel").SetValue("4");
         pgroup.CreateChild("ConsolePause").SetValue("false");
         pgroup.CreateChild("AllowUnsafeBlocks").SetValue("true");
+        pgroup.CreateChild("PlatformTarget").SetValue("x64");
 
         String assemblySearchPaths;
         GetAssemblySearchPaths(assemblySearchPaths);
@@ -248,9 +249,7 @@ namespace ToolCore
         pgroup.CreateChild("WarningLevel").SetValue("4");
         pgroup.CreateChild("ConsolePause").SetValue("false");
         pgroup.CreateChild("AllowUnsafeBlocks").SetValue("true");
-        //pgroup.CreateChild("NoStdLib").SetValue("true");
-        //pgroup.CreateChild("NoConfig").SetValue("true");
-        //pgroup.CreateChild("NoCompilerStandardLib").SetValue("true");
+        pgroup.CreateChild("PlatformTarget").SetValue("x64");
 
         String assemblySearchPaths;
         GetAssemblySearchPaths(assemblySearchPaths);

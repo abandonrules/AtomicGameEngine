@@ -127,7 +127,7 @@ void NETApplication::Setup()
     }
 
     // FIXME AtomicNET:
-    engineParameters_["ResourcePrefixPath"] = "/Users/josh/Dev/atomic/AtomicGameEngine/Resources/";
+    engineParameters_["ResourcePrefixPath"] = "C:/Dev/atomic/AtomicGameEngine/Resources/";
 
     // Use the script file name as the base name for the log file
     engineParameters_.InsertNew("LogName", filesystem->GetAppPreferencesDir("AtomicPlayer", "Logs") + "AtomicPlayer.log");
