@@ -99,6 +99,10 @@ void NETCSProject::CreateCompileItemGroup(XMLElement &projectRoot)
             {
                 compile.CreateChild("Link").SetValue("Generated\\" + result[j]);
             }
+            else
+            {
+                compile.CreateChild("Link").SetValue(result[j]);
+            }
 
         }
 
@@ -115,10 +119,12 @@ void NETCSProject::CreateReferencesItemGroup(XMLElement &projectRoot)
 
     XMLElement igroup = projectRoot.CreateChild("ItemGroup");
 
+    /*
     XMLElement mscorlibref = igroup.CreateChild("Reference");
     mscorlibref.SetAttribute("Include", "mscorlib");
     // mscorlibref.CreateChild("HintPath").SetValue(coreCLRAbsPath + "mscorlib.dll");
     mscorlibref.CreateChild("Private").SetValue("False");
+    */
 
     for (unsigned i = 0; i < references_.Size(); i++)
     {
@@ -139,7 +145,7 @@ void NETCSProject::CreateReferencesItemGroup(XMLElement &projectRoot)
         //}
 
         //xref.CreateChild("HintPath").SetValue(refpath);
-        xref.CreateChild("Private").SetValue("False");
+        //xref.CreateChild("Private").SetValue("False");
 
     }
 }
@@ -170,9 +176,10 @@ void NETCSProject::CreateReleasePropertyGroup(XMLElement &projectRoot)
     pgroup.CreateChild("WarningLevel").SetValue("4");
     pgroup.CreateChild("ConsolePause").SetValue("false");
     pgroup.CreateChild("AllowUnsafeBlocks").SetValue("true");
-    pgroup.CreateChild("NoStdLib").SetValue("true");
-    pgroup.CreateChild("NoConfig").SetValue("true");
-    pgroup.CreateChild("NoCompilerStandardLib").SetValue("true");
+
+    //pgroup.CreateChild("NoStdLib").SetValue("true");
+    //pgroup.CreateChild("NoConfig").SetValue("true");
+    //pgroup.CreateChild("NoCompilerStandardLib").SetValue("true");
 
     String assemblySearchPaths;
     GetAssemblySearchPaths(assemblySearchPaths);
@@ -203,9 +210,9 @@ void NETCSProject::CreateDebugPropertyGroup(XMLElement &projectRoot)
     pgroup.CreateChild("WarningLevel").SetValue("4");
     pgroup.CreateChild("ConsolePause").SetValue("false");
     pgroup.CreateChild("AllowUnsafeBlocks").SetValue("true");
-    pgroup.CreateChild("NoStdLib").SetValue("true");
-    pgroup.CreateChild("NoConfig").SetValue("true");
-    pgroup.CreateChild("NoCompilerStandardLib").SetValue("true");
+    //pgroup.CreateChild("NoStdLib").SetValue("true");
+    //pgroup.CreateChild("NoConfig").SetValue("true");
+    //pgroup.CreateChild("NoCompilerStandardLib").SetValue("true");
 
     String assemblySearchPaths;
     GetAssemblySearchPaths(assemblySearchPaths);
@@ -255,7 +262,7 @@ void NETCSProject::CreateMainPropertyGroup(XMLElement& projectRoot)
 
     // TargetFrameworkVersion
     XMLElement targetFrameWork = pgroup.CreateChild("TargetFrameworkVersion");
-    targetFrameWork.SetValue("4.5");
+    targetFrameWork.SetValue("v4.6");
 
 }
 
@@ -276,8 +283,8 @@ bool NETCSProject::Generate()
     project.CreateChild("Import").SetAttribute("Project", "$(MSBuildBinPath)\\Microsoft.CSharp.targets");
 
     // on msbuild this seems to stop referencing of framework assemblies
-    project.CreateChild("Target").SetAttribute("Name", "GetReferenceAssemblyPaths");
-    project.CreateChild("Target").SetAttribute("Name", "GetFrameworkPaths");
+    //project.CreateChild("Target").SetAttribute("Name", "GetReferenceAssemblyPaths");
+    //project.CreateChild("Target").SetAttribute("Name", "GetFrameworkPaths");
 
     String projectSource = xmlFile_->ToString();
 
