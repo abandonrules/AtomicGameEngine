@@ -76,6 +76,7 @@ private:
 
     void CreateCompileItemGroup(XMLElement &projectRoot);
     void CreateReferencesItemGroup(XMLElement &projectRoot);
+    void CreateProjectReferencesItemGroup(XMLElement & projectRoot);
     void CreatePackagesItemGroup(XMLElement &projectRoot);
     void CreateMainPropertyGroup(XMLElement &projectRoot);
     void CreateDebugPropertyGroup(XMLElement &projectRoot);
@@ -114,7 +115,7 @@ public:
 
 private:
 
-    void GenerateXamarinStudio(const String& slnPath);
+    void GenerateSolution(const String& slnPath);
 
     String name_;
     String outputPath_;
@@ -129,15 +130,16 @@ public:
 
     NETProjectGen(Context* context);
     virtual ~NETProjectGen();
-
+    
     const String& GetScriptPlatform() { return scriptPlatform_; }
 
     NETSolution* GetSolution() { return solution_; }
 
-    bool GetMonoBuild() { return monoBuild_; }
-    bool GetGameBuild() { return gameBuild_; }
-
     const Vector<SharedPtr<NETCSProject>>& GetCSProjects() { return projects_; }
+
+    NETCSProject* GetCSProjectByName(const String& name);
+
+    bool GetCSProjectDependencies(NETCSProject * source, PODVector<NETCSProject*>& depends) const;
 
     void SetScriptPlatform(const String& platform) { scriptPlatform_ = platform; }
 
@@ -145,15 +147,12 @@ public:
 
     String GenerateUUID();
 
-    bool LoadProject(const JSONValue& root, bool gameBuild = false);
-    bool LoadProject(const String& projectPath, bool gameBuild = false);
+    bool LoadProject(const JSONValue& root);
+    bool LoadProject(const String& projectPath);
 
 private:
 
     String scriptPlatform_;
-
-    bool monoBuild_;
-    bool gameBuild_;
 
     SharedPtr<NETSolution> solution_;
     Vector<SharedPtr<NETCSProject>> projects_;

@@ -142,6 +142,11 @@ namespace ToolCore
         {
             String ref = references_[i];
 
+            // project reference
+            if (projectGen_->GetCSProjectByName(ref))
+                continue;
+
+            // NuGet project
             if (ref.StartsWith("<"))
             {
                 XMLFile xmlFile(context_);
@@ -158,6 +163,32 @@ namespace ToolCore
 
         }
     }
+
+    void NETCSProject::CreateProjectReferencesItemGroup(XMLElement &projectRoot)
+    {
+        
+        XMLElement igroup = projectRoot.CreateChild("ItemGroup");
+
+        for (unsigned i = 0; i < references_.Size(); i++)
+        {
+            const String& ref = references_[i];
+            NETCSProject* project = projectGen_->GetCSProjectByName(ref);
+
+            if (!project)
+                continue;
+
+
+            XMLElement projectRef = igroup.CreateChild("ProjectReference");
+            projectRef.SetAttribute("Include", ToString(".\\%s.csproj", ref.CString()));
+
+            XMLElement xproject = projectRef.CreateChild("Project");
+            xproject.SetValue(ToString("{%s}", project->GetProjectGUID().CString()));
+
+            XMLElement xname = projectRef.CreateChild("Name");
+            xname.SetValue(project->GetName());
+        }
+    }
+
 
     void NETCSProject::CreatePackagesItemGroup(XMLElement &projectRoot)
     {
@@ -224,15 +255,6 @@ namespace ToolCore
         GetAssemblySearchPaths(assemblySearchPaths);
         pgroup.CreateChild("AssemblySearchPaths").SetValue(assemblySearchPaths);
 
-        ToolEnvironment* tenv = GetSubsystem<ToolEnvironment>();
-        const String& editorBinary = tenv->GetEditorBinary();
-
-        if (!projectGen_->GetGameBuild())
-        {
-            XMLElement command = pgroup.CreateChild("CustomCommands").CreateChild("CustomCommands").CreateChild("Command");
-            command.SetAttribute("type", "Execute");
-            command.SetAttribute("command", editorBinary.CString());
-        }
     }
 
     void NETCSProject::CreateDebugPropertyGroup(XMLElement &projectRoot)
@@ -257,13 +279,6 @@ namespace ToolCore
 
         ToolEnvironment* tenv = GetSubsystem<ToolEnvironment>();
         const String& editorBinary = tenv->GetEditorBinary();
-
-        if (!projectGen_->GetGameBuild())
-        {
-            XMLElement command = pgroup.CreateChild("CustomCommands").CreateChild("CustomCommands").CreateChild("Command");
-            command.SetAttribute("type", "Execute");
-            command.SetAttribute("command", editorBinary.CString());
-        }
 
     }
 
@@ -315,6 +330,7 @@ namespace ToolCore
         CreateDebugPropertyGroup(project);
         CreateReleasePropertyGroup(project);
         CreateReferencesItemGroup(project);
+        CreateProjectReferencesItemGroup(project);
         CreateCompileItemGroup(project);
         CreatePackagesItemGroup(project);
 
@@ -334,16 +350,11 @@ namespace ToolCore
 
     bool NETCSProject::Load(const JSONValue& root)
     {
-        bool gameBuild = projectGen_->GetGameBuild();
-
         name_ = root["name"].GetString();
 
         projectGuid_ = projectGen_->GenerateUUID();
 
-        if (gameBuild)
-            outputType_ = "Library";
-        else
-            outputType_ = root["outputType"].GetString();
+        outputType_ = root["outputType"].GetString();
 
         rootNamespace_ = root["rootNamespace"].GetString();
         assemblyName_ = root["assemblyName"].GetString();
@@ -351,10 +362,6 @@ namespace ToolCore
         ReplacePathStrings(assemblyOutputPath_);
 
         assemblySearchPaths_ = root["assemblySearchPaths"].GetString();
-
-        if (gameBuild)
-        {
-        }
 
         ReplacePathStrings(assemblySearchPaths_);
 
@@ -373,20 +380,6 @@ namespace ToolCore
         {
             String package = packages[i].GetString();
             packages_.Push(package);
-        }
-
-
-        if (gameBuild)
-        {
-            references_.Push("AtomicNETEngine");
-        }
-
-        // msvc doesn't like including these
-        if (projectGen_->GetMonoBuild())
-        {
-            references_.Push("System.Console");
-            references_.Push("System.IO");
-            references_.Push("System.IO.FileSystem");
         }
 
         const JSONArray& sources = root["sources"].GetArray();
@@ -416,17 +409,19 @@ namespace ToolCore
 
         String slnPath = outputPath_ + name_ + ".sln";
 
-        GenerateXamarinStudio(slnPath);
+        GenerateSolution(slnPath);
 
         return true;
     }
 
-    void NETSolution::GenerateXamarinStudio(const String &slnPath)
+    void NETSolution::GenerateSolution(const String &slnPath)
     {
         String source = "Microsoft Visual Studio Solution File, Format Version 12.00\n";
         source += "# Visual Studio 2012\n";
 
+        PODVector<NETCSProject*> depends;
         const Vector<SharedPtr<NETCSProject>>& projects = projectGen_->GetCSProjects();
+
         for (unsigned i = 0; i < projects.Size(); i++)
         {
             NETCSProject* p = projects.At(i);
@@ -435,26 +430,7 @@ namespace ToolCore
                 p->GetProjectGUID().CString(), p->GetName().CString(), p->GetName().CString(),
                 p->GetProjectGUID().CString());
 
-            // handle dependencies if any
-            Vector<NETCSProject*> depends;
-            const Vector<String>& references = p->GetReferences();
-
-            for (unsigned j = 0; j < projects.Size(); j++)
-            {
-                NETCSProject* pdepend = projects.At(j);
-
-                if (p == pdepend)
-                    continue;
-
-                for (unsigned k = 0; k < references.Size(); k++)
-                {
-                    if (pdepend->GetName() == references[k])
-                    {
-                        depends.Push(pdepend);
-                        break;
-                    }
-                }
-            }
+            projectGen_->GetCSProjectDependencies(p, depends);
 
             if (depends.Size())
             {
@@ -514,8 +490,7 @@ namespace ToolCore
         return true;
     }
 
-    NETProjectGen::NETProjectGen(Context* context) : Object(context),
-        monoBuild_(false), gameBuild_(false)
+    NETProjectGen::NETProjectGen(Context* context) : Object(context)
     {
 
 #ifndef ATOMIC_PLATFORM_WINDOWS
@@ -526,6 +501,44 @@ namespace ToolCore
 
     NETProjectGen::~NETProjectGen()
     {
+
+    }
+
+    NETCSProject* NETProjectGen::GetCSProjectByName(const String & name)
+    {
+
+        for (unsigned i = 0; i < projects_.Size(); i++)
+        {
+            if (projects_[i]->GetName() == name)
+                return projects_[i];
+        }
+
+        return nullptr;
+    }
+
+    bool NETProjectGen::GetCSProjectDependencies(NETCSProject* source, PODVector<NETCSProject*>& depends) const
+    {
+        depends.Clear();
+
+        const Vector<String>& references = source->GetReferences();
+
+        for (unsigned i = 0; i < projects_.Size(); i++)
+        {
+            NETCSProject* pdepend = projects_.At(i);
+
+            if (source == pdepend)
+                continue;
+
+            for (unsigned j = 0; j < references.Size(); j++)
+            {
+                if (pdepend->GetName() == references[j])
+                {
+                    depends.Push(pdepend);
+                }
+            }
+        }
+
+        return depends.Size() != 0;
 
     }
 
@@ -541,10 +554,9 @@ namespace ToolCore
         return true;
     }
 
-    bool NETProjectGen::LoadProject(const JSONValue &root, bool gameBuild)
+    bool NETProjectGen::LoadProject(const JSONValue &root)
     {
 
-        gameBuild_ = gameBuild;
         solution_ = new NETSolution(context_, this);
 
         solution_->Load(root["solution"]);
@@ -573,7 +585,7 @@ namespace ToolCore
         return true;
     }
 
-    bool NETProjectGen::LoadProject(const String& projectPath, bool gameBuild)
+    bool NETProjectGen::LoadProject(const String& projectPath)
     {
         SharedPtr<File> file(new File(context_));
 
@@ -588,7 +600,7 @@ namespace ToolCore
         if (!JSONFile::ParseJSON(json, jvalue))
             return false;
 
-        return LoadProject(jvalue, gameBuild);
+        return LoadProject(jvalue);
     }
 
     String NETProjectGen::GenerateUUID()
