@@ -125,6 +125,7 @@ private:
 
     String name_;
     String outputPath_;
+	String solutionGUID_;
 
 };
 
