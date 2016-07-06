@@ -215,9 +215,23 @@ namespace ToolCore
         }
 
         NETSolution* solution = projectGen_->GetSolution();
-        String projectPath = solution->GetOutputPath() + "packages.config";
+		String pkgConfigPath = solution->GetOutputPath() + name_ + "/";
 
-        SharedPtr<File> output(new File(context_, projectPath, FILE_WRITE));
+		FileSystem* fileSystem = GetSubsystem<FileSystem>();
+		if (!fileSystem->DirExists(pkgConfigPath))
+		{
+			fileSystem->CreateDirsRecursive(pkgConfigPath);
+			if (!fileSystem->DirExists(pkgConfigPath))
+			{
+				LOGERRORF("Unable to create dir: %s", pkgConfigPath.CString());
+				return;
+			}
+		}
+
+
+        String pkgConfigFilename = pkgConfigPath + "packages.config";
+
+        SharedPtr<File> output(new File(context_, pkgConfigFilename, FILE_WRITE));
         String source = packageConfig.ToString();
         output->Write(source.CString(), source.Length());
 
@@ -340,9 +354,24 @@ namespace ToolCore
 
         NETSolution* solution = projectGen_->GetSolution();
 
-        String projectPath = solution->GetOutputPath() + name_ + ".csproj";
+        String projectPath = solution->GetOutputPath() + name_ + "/";
+        String projectFilename = projectPath + name_ + ".csproj";
 
-        SharedPtr<File> output(new File(context_, projectPath, FILE_WRITE));
+        FileSystem* fs = GetSubsystem<FileSystem>();
+
+		if (!fs->DirExists(projectPath))
+		{
+			fs->CreateDirsRecursive(projectPath);
+
+			if (!fs->DirExists(projectPath))
+			{
+				LOGERRORF("Unable to create path: %s", projectPath.CString());
+				return false;
+			}
+
+		}
+
+        SharedPtr<File> output(new File(context_, projectFilename, FILE_WRITE));
         output->Write(projectSource.CString(), projectSource.Length());
 
         return true;
@@ -426,9 +455,12 @@ namespace ToolCore
         {
             NETCSProject* p = projects.At(i);
 
-            source += ToString("Project(\"{%s}\") = \"%s\", \"%s.csproj\", \"{%s}\"\n",
-                p->GetProjectGUID().CString(), p->GetName().CString(), p->GetName().CString(),
-                p->GetProjectGUID().CString());
+            const String& projectName = p->GetName();
+            const String& projectGUID = p->GetProjectGUID();
+
+            source += ToString("Project(\"{%s}\") = \"%s\", \"%s\\%s.csproj\", \"{%s}\"\n",
+                projectGUID.CString(), projectName.CString(), projectName.CString(), 
+                projectName.CString(), projectGUID.CString());
 
             projectGen_->GetCSProjectDependencies(p, depends);
 
