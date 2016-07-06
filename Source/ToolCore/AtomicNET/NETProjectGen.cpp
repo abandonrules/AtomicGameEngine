@@ -49,19 +49,12 @@ namespace ToolCore
     void NETProjectBase::ReplacePathStrings(String& path)
     {
         ToolEnvironment* tenv = GetSubsystem<ToolEnvironment>();
-        ToolSystem* tsys = GetSubsystem<ToolSystem>();
 
         const String& atomicRoot = tenv->GetRootSourceDir();
         const String& scriptPlatform = projectGen_->GetScriptPlatform();
 
         path.Replace("$ATOMIC_ROOT$", atomicRoot, false);
         path.Replace("$SCRIPT_PLATFORM$", scriptPlatform, false);
-
-        Project* project = tsys->GetProject();
-        if (project)
-        {
-            path.Replace("$PROJECT_ROOT$", project->GetProjectPath(), false);
-        }
 
     }
 
@@ -263,7 +256,7 @@ namespace ToolCore
 
         pgroup.CreateChild("DebugType").SetValue("full");
         pgroup.CreateChild("Optimize").SetValue("true");
-        pgroup.CreateChild("OutputPath").SetValue(assemblyOutputPath_);
+        pgroup.CreateChild("OutputPath").SetValue(assemblyOutputPath_ + "Release");
         pgroup.CreateChild("ErrorReport").SetValue("prompt");
         pgroup.CreateChild("WarningLevel").SetValue("4");
         pgroup.CreateChild("ConsolePause").SetValue("false");
@@ -273,6 +266,31 @@ namespace ToolCore
         String assemblySearchPaths;
         GetAssemblySearchPaths(assemblySearchPaths);
         pgroup.CreateChild("AssemblySearchPaths").SetValue(assemblySearchPaths);
+
+    }
+
+    void NETCSProject::CreateDebugPropertyGroup(XMLElement &projectRoot)
+    {
+        XMLElement pgroup = projectRoot.CreateChild("PropertyGroup");
+        pgroup.SetAttribute("Condition", " '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ");
+
+        pgroup.CreateChild("DebugSymbols").SetValue("true");
+        pgroup.CreateChild("DebugType").SetValue("full");
+        pgroup.CreateChild("Optimize").SetValue("false");
+        pgroup.CreateChild("OutputPath").SetValue(assemblyOutputPath_ + "Debug");
+        pgroup.CreateChild("DefineConstants").SetValue("DEBUG;");
+        pgroup.CreateChild("ErrorReport").SetValue("prompt");
+        pgroup.CreateChild("WarningLevel").SetValue("4");
+        pgroup.CreateChild("ConsolePause").SetValue("false");
+        pgroup.CreateChild("AllowUnsafeBlocks").SetValue("true");
+        pgroup.CreateChild("PlatformTarget").SetValue("x64");
+
+        String assemblySearchPaths;
+        GetAssemblySearchPaths(assemblySearchPaths);
+        pgroup.CreateChild("AssemblySearchPaths").SetValue(assemblySearchPaths);
+
+        ToolEnvironment* tenv = GetSubsystem<ToolEnvironment>();
+        const String& editorBinary = tenv->GetEditorBinary();
 
     }
 
@@ -303,31 +321,6 @@ namespace ToolCore
 		output->Write(info.CString(), info.Length());
 
 	}
-
-    void NETCSProject::CreateDebugPropertyGroup(XMLElement &projectRoot)
-    {
-        XMLElement pgroup = projectRoot.CreateChild("PropertyGroup");
-        pgroup.SetAttribute("Condition", " '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ");
-
-        pgroup.CreateChild("DebugSymbols").SetValue("true");
-        pgroup.CreateChild("DebugType").SetValue("full");
-        pgroup.CreateChild("Optimize").SetValue("false");
-        pgroup.CreateChild("OutputPath").SetValue(assemblyOutputPath_);
-        pgroup.CreateChild("DefineConstants").SetValue("DEBUG;");
-        pgroup.CreateChild("ErrorReport").SetValue("prompt");
-        pgroup.CreateChild("WarningLevel").SetValue("4");
-        pgroup.CreateChild("ConsolePause").SetValue("false");
-        pgroup.CreateChild("AllowUnsafeBlocks").SetValue("true");
-        pgroup.CreateChild("PlatformTarget").SetValue("x64");
-
-        String assemblySearchPaths;
-        GetAssemblySearchPaths(assemblySearchPaths);
-        pgroup.CreateChild("AssemblySearchPaths").SetValue(assemblySearchPaths);
-
-        ToolEnvironment* tenv = GetSubsystem<ToolEnvironment>();
-        const String& editorBinary = tenv->GetEditorBinary();
-
-    }
 
     void NETCSProject::CreateMainPropertyGroup(XMLElement& projectRoot)
     {
