@@ -68,33 +68,33 @@ namespace ToolCore
 
     }
 
-	bool NETCSProject::CreateProjectFolder(const String& path)
-	{
-		FileSystem* fileSystem = GetSubsystem<FileSystem>();
+    bool NETCSProject::CreateProjectFolder(const String& path)
+    {
+        FileSystem* fileSystem = GetSubsystem<FileSystem>();
 
-		if (fileSystem->DirExists(path))
-			return true;
+        if (fileSystem->DirExists(path))
+            return true;
 
-		fileSystem->CreateDirsRecursive(path);
+        fileSystem->CreateDirsRecursive(path);
 
-		if (!fileSystem->DirExists(path))
-		{
-			LOGERRORF("Unable to create dir: %s", path.CString());
-			return false;
-		}
+        if (!fileSystem->DirExists(path))
+        {
+            LOGERRORF("Unable to create dir: %s", path.CString());
+            return false;
+        }
 
-		return true;
-	}
+        return true;
+    }
 
 
-	void NETCSProject::CreateCompileItemGroup(XMLElement &projectRoot)
+    void NETCSProject::CreateCompileItemGroup(XMLElement &projectRoot)
     {
         FileSystem* fs = GetSubsystem<FileSystem>();
 
         XMLElement igroup = projectRoot.CreateChild("ItemGroup");
-	
-		// Compile AssemblyInfo.cs
-		igroup.CreateChild("Compile").SetAttribute("Include", "Properties\\AssemblyInfo.cs");
+
+        // Compile AssemblyInfo.cs
+        igroup.CreateChild("Compile").SetAttribute("Include", "Properties\\AssemblyInfo.cs");
 
         for (unsigned i = 0; i < sourceFolders_.Size(); i++)
         {
@@ -181,7 +181,7 @@ namespace ToolCore
 
     void NETCSProject::CreateProjectReferencesItemGroup(XMLElement &projectRoot)
     {
-        
+
         XMLElement igroup = projectRoot.CreateChild("ItemGroup");
 
         for (unsigned i = 0; i < references_.Size(); i++)
@@ -197,7 +197,7 @@ namespace ToolCore
             projectRef.SetAttribute("Include", ToString(".\\%s.csproj", ref.CString()));
 
             XMLElement xproject = projectRef.CreateChild("Project");
-            xproject.SetValue(ToString("{%s}", project->GetProjectGUID().CString()));
+            xproject.SetValue(ToString("{%s}", project->GetProjectGUID().ToLower().CString()));
 
             XMLElement xname = projectRef.CreateChild("Name");
             xname.SetValue(project->GetName());
@@ -257,15 +257,12 @@ namespace ToolCore
         pgroup.CreateChild("DebugType").SetValue("full");
         pgroup.CreateChild("Optimize").SetValue("true");
         pgroup.CreateChild("OutputPath").SetValue(assemblyOutputPath_ + "Release");
+        pgroup.CreateChild("DefineConstants").SetValue("TRACE");
         pgroup.CreateChild("ErrorReport").SetValue("prompt");
         pgroup.CreateChild("WarningLevel").SetValue("4");
         pgroup.CreateChild("ConsolePause").SetValue("false");
         pgroup.CreateChild("AllowUnsafeBlocks").SetValue("true");
         pgroup.CreateChild("PlatformTarget").SetValue("x64");
-
-        String assemblySearchPaths;
-        GetAssemblySearchPaths(assemblySearchPaths);
-        pgroup.CreateChild("AssemblySearchPaths").SetValue(assemblySearchPaths);
 
     }
 
@@ -278,49 +275,42 @@ namespace ToolCore
         pgroup.CreateChild("DebugType").SetValue("full");
         pgroup.CreateChild("Optimize").SetValue("false");
         pgroup.CreateChild("OutputPath").SetValue(assemblyOutputPath_ + "Debug");
-        pgroup.CreateChild("DefineConstants").SetValue("DEBUG;");
+        pgroup.CreateChild("DefineConstants").SetValue("DEBUG;TRACE");
         pgroup.CreateChild("ErrorReport").SetValue("prompt");
         pgroup.CreateChild("WarningLevel").SetValue("4");
         pgroup.CreateChild("ConsolePause").SetValue("false");
         pgroup.CreateChild("AllowUnsafeBlocks").SetValue("true");
         pgroup.CreateChild("PlatformTarget").SetValue("x64");
 
-        String assemblySearchPaths;
-        GetAssemblySearchPaths(assemblySearchPaths);
-        pgroup.CreateChild("AssemblySearchPaths").SetValue(assemblySearchPaths);
-
-        ToolEnvironment* tenv = GetSubsystem<ToolEnvironment>();
-        const String& editorBinary = tenv->GetEditorBinary();
-
     }
 
-	void NETCSProject::CreateAssemblyInfo()
-	{
+    void NETCSProject::CreateAssemblyInfo()
+    {
 
-		String info = "using System.Reflection;\nusing System.Runtime.CompilerServices;\nusing System.Runtime.InteropServices;\n\n\n";
-		info += ToString("[assembly:AssemblyTitle(\"%s\")]\n", name_.CString());
-		info += "[assembly:AssemblyDescription(\"\")]\n";
-		info += "[assembly:AssemblyConfiguration(\"\")]\n";
-		info += "[assembly:AssemblyCompany(\"\")]\n";
-		info += ToString("[assembly:AssemblyProduct(\"%s\")]\n", name_.CString());
+        String info = "using System.Reflection;\nusing System.Runtime.CompilerServices;\nusing System.Runtime.InteropServices;\n\n\n";
+        info += ToString("[assembly:AssemblyTitle(\"%s\")]\n", name_.CString());
+        info += "[assembly:AssemblyDescription(\"\")]\n";
+        info += "[assembly:AssemblyConfiguration(\"\")]\n";
+        info += "[assembly:AssemblyCompany(\"\")]\n";
+        info += ToString("[assembly:AssemblyProduct(\"%s\")]\n", name_.CString());
 
-		info += "\n\n\n";
+        info += "\n\n\n";
 
-		info += "[assembly:ComVisible(false)]\n";
+        info += "[assembly:ComVisible(false)]\n";
 
-		info += "\n\n";
+        info += "\n\n";
 
-		info += ToString("[assembly:Guid(\"%s\")]\n", projectGuid_.CString());
+        info += ToString("[assembly:Guid(\"%s\")]\n", projectGuid_.CString());
 
-		info += "\n\n";
+        info += "\n\n";
 
-		info += "[assembly:AssemblyVersion(\"1.0.0.0\")]\n";
-		info += "[assembly:AssemblyFileVersion(\"1.0.0.0\")]\n";
+        info += "[assembly:AssemblyVersion(\"1.0.0.0\")]\n";
+        info += "[assembly:AssemblyFileVersion(\"1.0.0.0\")]\n";
 
-		SharedPtr<File> output(new File(context_, projectPath_ + "Properties/AssemblyInfo.cs", FILE_WRITE));
-		output->Write(info.CString(), info.Length());
+        SharedPtr<File> output(new File(context_, projectPath_ + "Properties/AssemblyInfo.cs", FILE_WRITE));
+        output->Write(info.CString(), info.Length());
 
-	}
+    }
 
     void NETCSProject::CreateMainPropertyGroup(XMLElement& projectRoot)
     {
@@ -338,11 +328,13 @@ namespace ToolCore
 
         // ProjectGuid
         XMLElement guid = pgroup.CreateChild("ProjectGuid");
-        guid.SetValue(projectGuid_);
+        guid.SetValue("{" + projectGuid_ + "}");
 
         // OutputType
         XMLElement outputType = pgroup.CreateChild("OutputType");
         outputType.SetValue(outputType_);
+
+        pgroup.CreateChild("AppDesignerFolder").SetValue("Properties");
 
         // RootNamespace
         XMLElement rootNamespace = pgroup.CreateChild("RootNamespace");
@@ -356,25 +348,32 @@ namespace ToolCore
         XMLElement targetFrameWork = pgroup.CreateChild("TargetFrameworkVersion");
         targetFrameWork.SetValue("v4.6");
 
+        pgroup.CreateChild("FileAlignment").SetValue("512");
+
     }
 
     bool NETCSProject::Generate()
     {
-		NETSolution* solution = projectGen_->GetSolution();
+        NETSolution* solution = projectGen_->GetSolution();
 
-		projectPath_ = solution->GetOutputPath() + name_ + "/";
+        projectPath_ = solution->GetOutputPath() + name_ + "/";
 
-		if (!CreateProjectFolder(projectPath_))
-			return false;
+        if (!CreateProjectFolder(projectPath_))
+            return false;
 
-		if (!CreateProjectFolder(projectPath_ + "Properties"))
-			return false;
+        if (!CreateProjectFolder(projectPath_ + "Properties"))
+            return false;
 
         XMLElement project = xmlFile_->CreateRoot("Project");
 
         project.SetAttribute("DefaultTargets", "Build");
-        project.SetAttribute("ToolsVersion", "4.0");
+        project.SetAttribute("ToolsVersion", "14.0");
+        project.SetAttribute("DefaultTargets", "Build");
         project.SetAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
+
+        XMLElement import = project.CreateChild("Import");
+        import.SetAttribute("Project", "$(MSBuildExtensionsPath)\\$(MSBuildToolsVersion)\\Microsoft.Common.props");
+        import.SetAttribute("Condition", "Exists('$(MSBuildExtensionsPath)\\$(MSBuildToolsVersion)\\Microsoft.Common.props')");
 
         CreateMainPropertyGroup(project);
         CreateDebugPropertyGroup(project);
@@ -383,9 +382,9 @@ namespace ToolCore
         CreateProjectReferencesItemGroup(project);
         CreateCompileItemGroup(project);
         CreatePackagesItemGroup(project);
-		CreateAssemblyInfo();
+        CreateAssemblyInfo();
 
-        project.CreateChild("Import").SetAttribute("Project", "$(MSBuildBinPath)\\Microsoft.CSharp.targets");
+        project.CreateChild("Import").SetAttribute("Project", "$(MSBuildToolsPath)\\Microsoft.CSharp.targets");
 
         String projectSource = xmlFile_->ToString();
 
@@ -464,7 +463,11 @@ namespace ToolCore
     void NETSolution::GenerateSolution(const String &slnPath)
     {
         String source = "Microsoft Visual Studio Solution File, Format Version 12.00\n";
-        source += "# Visual Studio 2012\n";
+        source += "# Visual Studio 14\n";
+        source += "VisualStudioVersion = 14.0.25420.1\n";
+        source += "MinimumVisualStudioVersion = 10.0.40219.1\n";
+
+        solutionGUID_ = projectGen_->GenerateUUID();
 
         PODVector<NETCSProject*> depends;
         const Vector<SharedPtr<NETCSProject>>& projects = projectGen_->GetCSProjects();
@@ -477,9 +480,10 @@ namespace ToolCore
             const String& projectGUID = p->GetProjectGUID();
 
             source += ToString("Project(\"{%s}\") = \"%s\", \"%s\\%s.csproj\", \"{%s}\"\n",
-                projectGUID.CString(), projectName.CString(), projectName.CString(), 
+                solutionGUID_.CString(), projectName.CString(), projectName.CString(),
                 projectName.CString(), projectGUID.CString());
 
+            /*
             projectGen_->GetCSProjectDependencies(p, depends);
 
             if (depends.Size())
@@ -494,6 +498,7 @@ namespace ToolCore
 
                 source += "\tEndProjectSection\n";
             }
+            */
 
             source += "\tEndProject\n";
         }
