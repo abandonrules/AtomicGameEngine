@@ -9,7 +9,7 @@
       "outputType" : "Library",
       "rootNamespace" : "AtomicEngine",
       "assemblyName" : "AtomicNET",
-      "assemblyOutputPath" : "bin/",
+      "assemblyOutputPath" : "bin\\",
       "references" : [
         "System", "System.Core" , "System.Xml.Linq", "System.XML"
       ],
@@ -25,7 +25,7 @@
       "outputType" : "Library",
       "rootNamespace" : "AtomicTools",
       "assemblyName" : "AtomicNETService",
-      "assemblyOutputPath" : "bin/",
+      "assemblyOutputPath" : "bin\\",
       "references" : [
         "System",
         "<Reference Include=\"System.Collections.Immutable, Version=1.2.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL\"><HintPath>..\\packages\\System.Collections.Immutable.1.2.0\\lib\\portable-net45+win8+wp8+wpa81\\System.Collections.Immutable.dll</HintPath><Private>True</Private></Reference>",
@@ -48,7 +48,7 @@
       "outputType" : "Exe",
       "rootNamespace" : "AtomicTest",
       "assemblyName" : "AtomicTest",
-      "assemblyOutputPath" : "bin/",
+      "assemblyOutputPath" : "bin\\",
       "references" : [
         "System",
         "System.Core" ,

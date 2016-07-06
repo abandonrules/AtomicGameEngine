@@ -50,7 +50,9 @@ namespace ToolCore
     {
         ToolEnvironment* tenv = GetSubsystem<ToolEnvironment>();
 
-        const String& atomicRoot = tenv->GetRootSourceDir();
+        String atomicRoot = tenv->GetRootSourceDir();
+        atomicRoot = RemoveTrailingSlash(atomicRoot);
+        
         const String& scriptPlatform = projectGen_->GetScriptPlatform();
 
         path.Replace("$ATOMIC_ROOT$", atomicRoot, false);
@@ -107,7 +109,11 @@ namespace ToolCore
             {
                 XMLElement compile = igroup.CreateChild("Compile");
 
-                compile.SetAttribute("Include", sourceFolder + result[j]);
+                // IMPORTANT: / Slash direction breaks intellisense :/
+                String path = sourceFolder + result[j];
+                path.Replace('/', '\\');
+
+                compile.SetAttribute("Include", path.CString());
 
                 // put generated files into generated folder
                 if (sourceFolder.Contains("Generated") && sourceFolder.Contains("CSharp") && sourceFolder.Contains("Packages"))
@@ -256,7 +262,7 @@ namespace ToolCore
 
         pgroup.CreateChild("DebugType").SetValue("full");
         pgroup.CreateChild("Optimize").SetValue("true");
-        pgroup.CreateChild("OutputPath").SetValue(assemblyOutputPath_ + "Release");
+        pgroup.CreateChild("OutputPath").SetValue(assemblyOutputPath_ + "Release\\");
         pgroup.CreateChild("DefineConstants").SetValue("TRACE");
         pgroup.CreateChild("ErrorReport").SetValue("prompt");
         pgroup.CreateChild("WarningLevel").SetValue("4");
@@ -274,7 +280,7 @@ namespace ToolCore
         pgroup.CreateChild("DebugSymbols").SetValue("true");
         pgroup.CreateChild("DebugType").SetValue("full");
         pgroup.CreateChild("Optimize").SetValue("false");
-        pgroup.CreateChild("OutputPath").SetValue(assemblyOutputPath_ + "Debug");
+        pgroup.CreateChild("OutputPath").SetValue(assemblyOutputPath_ + "Debug\\");
         pgroup.CreateChild("DefineConstants").SetValue("DEBUG;TRACE");
         pgroup.CreateChild("ErrorReport").SetValue("prompt");
         pgroup.CreateChild("WarningLevel").SetValue("4");
@@ -483,7 +489,6 @@ namespace ToolCore
                 solutionGUID_.CString(), projectName.CString(), projectName.CString(),
                 projectName.CString(), projectGUID.CString());
 
-            /*
             projectGen_->GetCSProjectDependencies(p, depends);
 
             if (depends.Size())
@@ -498,7 +503,6 @@ namespace ToolCore
 
                 source += "\tEndProjectSection\n";
             }
-            */
 
             source += "\tEndProject\n";
         }
