@@ -74,6 +74,8 @@ public:
 
 private:
 
+	bool CreateProjectFolder(const String& path);
+
     void CreateCompileItemGroup(XMLElement &projectRoot);
     void CreateReferencesItemGroup(XMLElement &projectRoot);
     void CreateProjectReferencesItemGroup(XMLElement & projectRoot);
@@ -81,6 +83,7 @@ private:
     void CreateMainPropertyGroup(XMLElement &projectRoot);
     void CreateDebugPropertyGroup(XMLElement &projectRoot);
     void CreateReleasePropertyGroup(XMLElement &projectRoot);
+	void CreateAssemblyInfo();
     void GetAssemblySearchPaths(String& paths);
 
     String name_;
@@ -90,6 +93,9 @@ private:
     String assemblyName_;
     String assemblyOutputPath_;
     String assemblySearchPaths_;
+
+	// project paths
+	String projectPath_;
 
     XMLElement xmlRoot_;
 

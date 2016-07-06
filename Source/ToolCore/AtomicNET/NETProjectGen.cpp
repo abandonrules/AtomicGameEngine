@@ -75,11 +75,33 @@ namespace ToolCore
 
     }
 
-    void NETCSProject::CreateCompileItemGroup(XMLElement &projectRoot)
+	bool NETCSProject::CreateProjectFolder(const String& path)
+	{
+		FileSystem* fileSystem = GetSubsystem<FileSystem>();
+
+		if (fileSystem->DirExists(path))
+			return true;
+
+		fileSystem->CreateDirsRecursive(path);
+
+		if (!fileSystem->DirExists(path))
+		{
+			LOGERRORF("Unable to create dir: %s", path.CString());
+			return false;
+		}
+
+		return true;
+	}
+
+
+	void NETCSProject::CreateCompileItemGroup(XMLElement &projectRoot)
     {
         FileSystem* fs = GetSubsystem<FileSystem>();
 
         XMLElement igroup = projectRoot.CreateChild("ItemGroup");
+	
+		// Compile AssemblyInfo.cs
+		igroup.CreateChild("Compile").SetAttribute("Include", "Properties\\AssemblyInfo.cs");
 
         for (unsigned i = 0; i < sourceFolders_.Size(); i++)
         {
@@ -214,24 +236,7 @@ namespace ToolCore
             CopyXMLElementRecursive(xmlFile.GetRoot(), xref);
         }
 
-        NETSolution* solution = projectGen_->GetSolution();
-		String pkgConfigPath = solution->GetOutputPath() + name_ + "/";
-
-		FileSystem* fileSystem = GetSubsystem<FileSystem>();
-		if (!fileSystem->DirExists(pkgConfigPath))
-		{
-			fileSystem->CreateDirsRecursive(pkgConfigPath);
-			if (!fileSystem->DirExists(pkgConfigPath))
-			{
-				LOGERRORF("Unable to create dir: %s", pkgConfigPath.CString());
-				return;
-			}
-		}
-
-
-        String pkgConfigFilename = pkgConfigPath + "packages.config";
-
-        SharedPtr<File> output(new File(context_, pkgConfigFilename, FILE_WRITE));
+        SharedPtr<File> output(new File(context_, projectPath_ + "packages.config", FILE_WRITE));
         String source = packageConfig.ToString();
         output->Write(source.CString(), source.Length());
 
@@ -270,6 +275,34 @@ namespace ToolCore
         pgroup.CreateChild("AssemblySearchPaths").SetValue(assemblySearchPaths);
 
     }
+
+	void NETCSProject::CreateAssemblyInfo()
+	{
+
+		String info = "using System.Reflection;\nusing System.Runtime.CompilerServices;\nusing System.Runtime.InteropServices;\n\n\n";
+		info += ToString("[assembly:AssemblyTitle(\"%s\")]\n", name_.CString());
+		info += "[assembly:AssemblyDescription(\"\")]\n";
+		info += "[assembly:AssemblyConfiguration(\"\")]\n";
+		info += "[assembly:AssemblyCompany(\"\")]\n";
+		info += ToString("[assembly:AssemblyProduct(\"%s\")]\n", name_.CString());
+
+		info += "\n\n\n";
+
+		info += "[assembly:ComVisible(false)]\n";
+
+		info += "\n\n";
+
+		info += ToString("[assembly:Guid(\"%s\")]\n", projectGuid_.CString());
+
+		info += "\n\n";
+
+		info += "[assembly:AssemblyVersion(\"1.0.0.0\")]\n";
+		info += "[assembly:AssemblyFileVersion(\"1.0.0.0\")]\n";
+
+		SharedPtr<File> output(new File(context_, projectPath_ + "Properties/AssemblyInfo.cs", FILE_WRITE));
+		output->Write(info.CString(), info.Length());
+
+	}
 
     void NETCSProject::CreateDebugPropertyGroup(XMLElement &projectRoot)
     {
@@ -334,6 +367,16 @@ namespace ToolCore
 
     bool NETCSProject::Generate()
     {
+		NETSolution* solution = projectGen_->GetSolution();
+
+		projectPath_ = solution->GetOutputPath() + name_ + "/";
+
+		if (!CreateProjectFolder(projectPath_))
+			return false;
+
+		if (!CreateProjectFolder(projectPath_ + "Properties"))
+			return false;
+
         XMLElement project = xmlFile_->CreateRoot("Project");
 
         project.SetAttribute("DefaultTargets", "Build");
@@ -347,31 +390,13 @@ namespace ToolCore
         CreateProjectReferencesItemGroup(project);
         CreateCompileItemGroup(project);
         CreatePackagesItemGroup(project);
+		CreateAssemblyInfo();
 
         project.CreateChild("Import").SetAttribute("Project", "$(MSBuildBinPath)\\Microsoft.CSharp.targets");
 
         String projectSource = xmlFile_->ToString();
 
-        NETSolution* solution = projectGen_->GetSolution();
-
-        String projectPath = solution->GetOutputPath() + name_ + "/";
-        String projectFilename = projectPath + name_ + ".csproj";
-
-        FileSystem* fs = GetSubsystem<FileSystem>();
-
-		if (!fs->DirExists(projectPath))
-		{
-			fs->CreateDirsRecursive(projectPath);
-
-			if (!fs->DirExists(projectPath))
-			{
-				LOGERRORF("Unable to create path: %s", projectPath.CString());
-				return false;
-			}
-
-		}
-
-        SharedPtr<File> output(new File(context_, projectFilename, FILE_WRITE));
+        SharedPtr<File> output(new File(context_, projectPath_ + name_ + ".csproj", FILE_WRITE));
         output->Write(projectSource.CString(), projectSource.Length());
 
         return true;
